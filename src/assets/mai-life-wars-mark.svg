@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="mai" x1="12" y1="12" x2="116" y2="116" gradientUnits="userSpaceOnUse"><stop stop-color="#28B9FF"/><stop offset=".52" stop-color="#B87CFF"/><stop offset="1" stop-color="#45F0A0"/></linearGradient>
+    <radialGradient id="field" cx="0" cy="0" r="1" gradientTransform="translate(64 61) rotate(90) scale(59)" gradientUnits="userSpaceOnUse"><stop stop-color="#152D50"/><stop offset="1" stop-color="#080D1B"/></radialGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="31" fill="url(#field)"/>
+  <rect x="2" y="2" width="124" height="124" rx="31" stroke="url(#mai)" stroke-width="2"/>
+  <circle cx="64" cy="62" r="45" stroke="url(#mai)" stroke-opacity=".35"/>
+  <circle cx="64" cy="62" r="35" stroke="url(#mai)" stroke-opacity=".18" stroke-dasharray="3 5"/>
+  <path d="M24 83V39h11l29 29 29-29h11v44H91V59L64 85 37 59v24H24Z" fill="url(#mai)"/>
+  <path d="M48 96h32" stroke="url(#mai)" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="104" cy="24" r="4" fill="#45F0A0"/>
+  <circle cx="104" cy="24" r="8" stroke="#45F0A0" stroke-opacity=".22"/>
+</svg>

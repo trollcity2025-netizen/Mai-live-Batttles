@@ -1,0 +1,70 @@
+project_id = "mai-life-wars"
+
+[functions.paypal-webhook]
+verify_jwt = false
+
+[functions.stream-token]
+verify_jwt = true
+
+[functions.create-battle]
+verify_jwt = true
+
+[functions.finalize-battle]
+verify_jwt = true
+
+[functions.paypal-create-order]
+verify_jwt = true
+
+[functions.paypal-capture-order]
+verify_jwt = true
+
+[functions.request-cashout]
+verify_jwt = true
+
+[functions.paypal-payout]
+verify_jwt = true
+
+[functions.admin-cashout-review]
+verify_jwt = true
+
+[functions.admin-terminate-battle]
+verify_jwt = true
+
+[functions.request-account-deletion]
+verify_jwt = true
+
+[functions.save-payout-recipient]
+verify_jwt = true
+
+[functions.getstream-webhook]
+verify_jwt = false
+
+[functions.join-battle]
+verify_jwt = true
+
+[functions.send-battle-gift]
+verify_jwt = true
+
+[functions.send-battle-chat]
+verify_jwt = true
+
+[functions.update-recording-consent]
+verify_jwt = true
+
+[functions.admin-verify-payout-recipient]
+verify_jwt = true
+
+[functions.admin-update-package]
+verify_jwt = true
+
+[functions.admin-system-health]
+verify_jwt = true
+
+[functions.confirm-battle-connection]
+verify_jwt = true
+
+[functions.leave-battle]
+verify_jwt = true
+
+[functions.admin-process-account-deletion]
+verify_jwt = true

@@ -1,0 +1,14 @@
+import { corsHeaders, errorMessage, json } from '../_shared/cors.ts'
+import { requireProfile } from '../_shared/supabase.ts'
+const paypalBase = () => Deno.env.get('PAYPAL_ENV') === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com'
+async function paypalAccessToken() { const id=Deno.env.get('PAYPAL_CLIENT_ID'); const secret=Deno.env.get('PAYPAL_CLIENT_SECRET'); if(!id||!secret) throw new Error('PayPal server credentials are not configured'); const r=await fetch(`${paypalBase()}/v1/oauth2/token`,{method:'POST',headers:{Authorization:`Basic ${btoa(`${id}:${secret}`)}`,'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=client_credentials'}); const b=await r.json(); if(!r.ok) throw new Error(b.error_description||'PayPal authentication failed'); return b.access_token as string }
+Deno.serve(async (request) => {
+  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  try { const auth=request.headers.get('Authorization'); if(!auth) return json({error:'Authorization required'},401); const {db,profile}=await requireProfile(auth); const {orderId}=await request.json(); if(typeof orderId!=='string') return json({error:'Order ID required'},400)
+    const {data:purchase,error:lookupError}=await db.from('purchase_orders').select('*').eq('provider_order_id',orderId).eq('user_profile_id',profile.id).single(); if(lookupError||!purchase) return json({error:'Purchase order not found'},404); if(purchase.status==='credited') return json({status:'credited',bullets:purchase.bullets})
+    const token=await paypalAccessToken(); const response=await fetch(`${paypalBase()}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json','PayPal-Request-Id':`capture-${purchase.id}`}}); const capture=await response.json(); if(!response.ok) throw new Error(capture.message||'PayPal capture failed')
+    const captureRecord=capture.purchase_units?.[0]?.payments?.captures?.[0]; const captureId=captureRecord?.id; const status=captureRecord?.status; const capturedAmount=Number(captureRecord?.amount?.value); const expectedAmount=Number(purchase.amount_usd); if(status!=='COMPLETED'||!captureId) return json({error:'PayPal has not confirmed a completed capture'},409); if(captureRecord?.amount?.currency_code!=='USD'||!Number.isFinite(capturedAmount)||Math.abs(capturedAmount-expectedAmount)>0.001) return json({error:'Captured amount does not match the server-side package price'},409)
+    const {data:credit,error:creditError}=await db.rpc('apply_verified_purchase',{p_purchase_id:purchase.id,p_provider_capture_id:captureId,p_idempotency_key:`paypal-credit:${captureId}`}); if(creditError) throw creditError
+    return json({status:'credited',bullets:purchase.bullets,credit})
+  } catch(error){return json({error:errorMessage(error)},400)}
+})
