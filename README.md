@@ -1,12 +1,12 @@
-# MAI Life Wars — MAI Corp MVP
+# Mai Live Wars — MAI Corp MVP
 
-MAI Life Wars is a standalone MAI Corp mobile-first live creator battle app. The repository contains the redesigned React/TypeScript interface, Capacitor configuration, Supabase migrations and Edge Function scaffolding, GetStream Video RTC integration, PayPal checkout/payout workflows, AI audio-caption moderation, and an in-app route-gated admin control room.
+Mai Live Wars is a standalone MAI Corp mobile-first live creator battle app. The repository contains the redesigned React/TypeScript interface, Capacitor configuration, Supabase migrations and Edge Function scaffolding, GetStream Video RTC integration, PayPal checkout/payout workflows, AI audio-caption moderation, and an in-app route-gated admin control room.
 
 **Do not treat this repository as production-ready until the external credentials, migrations, Edge Functions, moderation provider, PayPal business approval, mobile payment policy, and real-device tests are complete.** The app intentionally does not fabricate live rooms, wallet balances, payments, or moderation activity when the backend is not connected.
 
 ## Product decisions
 
-- **Brand:** MAI Life Wars — an MAI Corp product.
+- **Brand:** Mai Live Wars — an MAI Corp product.
 - **Platforms:** Android and iOS via Capacitor. No custom domain is required for the native app.
 - **Backend:** Supabase Auth, PostgreSQL, Storage, Realtime, and Edge Functions.
 - **RTC:** GetStream Video SDK. Participant tokens are issued server-side; the API secret is never bundled in the app.
@@ -65,7 +65,7 @@ supabase secrets set \
   GETSTREAM_API_SECRET="YOUR_GETSTREAM_API_SECRET" \
   OPENROUTER_API_KEY="YOUR_OPENROUTER_API_KEY" \
   OPENROUTER_MODERATION_MODEL="YOUR_OPENROUTER_MODEL_ID" \
-  PAYPAL_ENV="sandbox" \
+  PAYPAL_ENV="live" \
   PAYPAL_CLIENT_ID="YOUR_PAYPAL_CLIENT_ID" \
   PAYPAL_CLIENT_SECRET="YOUR_PAYPAL_CLIENT_SECRET" \
   PAYPAL_WEBHOOK_ID="YOUR_PAYPAL_WEBHOOK_ID" \
@@ -103,7 +103,7 @@ The migrations are intentionally split into separate files. Apply them in timest
 21. `202610120021_battle_chat_moderation_throttle.sql`
 22. `202610120022_account_wide_safety_sanctions.sql`
 
-Use a dedicated new Supabase project for MAI Life Wars. Do not apply these migrations to the Mai Troll production project. Review each migration in a staging project before production.
+Use a dedicated new Supabase project for Mai Live Wars. Do not apply these migrations to the Mai Troll production project. Review each migration in a staging project before production.
 
 ### 5. Deploy Edge Functions
 
@@ -161,9 +161,13 @@ supabase functions deploy update-recording-consent
 supabase functions deploy admin-terminate-battle
 ```
 
+### Edge Function debugging
+
+Failed Supabase Edge Function requests are logged in the browser developer console with the function name, HTTP status, and returned error when available. Caught server-side errors are logged with the function name in Supabase Edge Function logs. Open the function's Logs view in the Supabase dashboard to inspect server errors.
+
 ### 6. Configure GetStream Video
 
-1. Create a separate GetStream app for MAI Life Wars.
+1. Create a separate GetStream app for Mai Live Wars.
 2. Put the public API key in `VITE_GETSTREAM_API_KEY` and the API secret in Supabase server secrets.
 3. Configure video call permissions, allowed app origins, quotas, and usage alerts.
 4. Configure a trusted webhook to the `getstream-webhook` Edge Function. Enable the appropriate call transcription/caption events in the GetStream dashboard and verify the webhook signature format against the active GetStream documentation before launch.
@@ -189,7 +193,7 @@ AI classification is not perfect. Do not permanently ban users solely on an ambi
 
 ### 8. Configure PayPal
 
-1. Start with PayPal sandbox credentials.
+1. Use live PayPal credentials from a verified business app.
 2. Create and activate approved Bullet packages in `public.bullet_packages`.
 3. Keep the 31,500-Bullet / $2,500 package disabled. At the stated base rate of 125 Bullets per $1, that package conflicts with the conversion math and requires owner confirmation.
 4. Configure and verify the PayPal webhook ID and signature verification.
@@ -201,7 +205,7 @@ The purchase rate and cashout rate intentionally differ: 125 purchased Bullets p
 
 ### 9. Bootstrap the first administrator
 
-Create and verify your own account through the app, complete the profile, then run a one-time statement in the Supabase SQL Editor for the dedicated MAI Life Wars project:
+Create and verify your own account through the app, complete the profile, then run a one-time statement in the Supabase SQL Editor for the dedicated Mai Live Wars project:
 
 ```sql
 update public.user_profiles
@@ -235,7 +239,7 @@ Open the generated Android project in Android Studio and the iOS project in Xcod
 
 ## Important MVP limitations to resolve before public launch
 
-- PayPal purchase and payout flows need live sandbox testing, approved business credentials, webhook validation, and app-store policy review.
+- PayPal purchase and payout flows need live testing, approved business credentials, webhook validation, and app-store policy review.
 - Verify the exact GetStream SDK versions and caption/transcription event payloads against current vendor documentation. The webhook is deliberately isolated so provider changes do not spread into UI code.
 - The user-facing chat is backed by Supabase Realtime. Enable `battle_chat_messages` in the project's Realtime publication if your database setup does not allow the migration to do so.
 - Promotional battle recording is off by default and is not automatically started by the app. Do not enable recording until per-participant consent checks, recording-provider setup, secure storage, retention, and deletion rules are verified.

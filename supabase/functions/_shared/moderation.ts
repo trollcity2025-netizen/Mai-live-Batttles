@@ -36,7 +36,7 @@ async function moderateWithOpenRouter(text: string): Promise<ModerationDecision>
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       ...(Deno.env.get('OPENROUTER_SITE_URL') ? { 'HTTP-Referer': Deno.env.get('OPENROUTER_SITE_URL')! } : {}),
-      'X-Title': 'MAI Life Wars Safety',
+      'X-Title': 'Mai Live Wars Safety',
     },
     body: JSON.stringify({
       model,

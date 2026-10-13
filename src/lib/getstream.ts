@@ -25,8 +25,9 @@ export async function connectGetStreamBattle(roomId: string, profileId: string, 
   }
 
   // Create a short-lived authenticated client for the current battle.
-  const client = new StreamVideoClient({
+  const client = StreamVideoClient.getOrCreateInstance({
     apiKey,
+    options: { clientEventsReportingEnabled: false },
     user: { id: data.userId, name: displayName },
     token: data.token,
   })

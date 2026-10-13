@@ -1,5 +1,5 @@
 export function setPageMeta(title: string, description: string, path = '/') {
-  document.title = `${title} | MAI Life Wars`
+  document.title = `${title} | Mai Live Wars`
   let descriptionTag = document.querySelector<HTMLMetaElement>('meta[name="description"]')
   if (!descriptionTag) {
     descriptionTag = document.createElement('meta')

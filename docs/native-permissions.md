@@ -8,11 +8,11 @@ Add clear, user-facing explanations:
 
 ```xml
 <key>NSCameraUsageDescription</key>
-<string>MAI Life Wars uses your camera when you choose to broadcast in a live battle.</string>
+<string>Mai Live Wars uses your camera when you choose to broadcast in a live battle.</string>
 <key>NSMicrophoneUsageDescription</key>
-<string>MAI Life Wars uses your microphone when you choose to speak during a live battle.</string>
+<string>Mai Live Wars uses your microphone when you choose to speak during a live battle.</string>
 <key>NSPhotoLibraryUsageDescription</key>
-<string>MAI Life Wars lets you choose a profile image for your fighter profile.</string>
+<string>Mai Live Wars lets you choose a profile image for your fighter profile.</string>
 ```
 
 Only add additional usage descriptions when the corresponding feature is implemented and enabled.

@@ -140,7 +140,7 @@ begin
     case v_action
       when 'warning' then 'A confirmed safety violation was found. Another confirmed violation will temporarily disable chat; a third will ban the account.'
       when 'chat_timeout' then 'Chat is disabled across battles and viewing for 30 seconds. A third confirmed violation will ban the account.'
-      else 'This account is banned from MAI Life Wars after three confirmed safety violations.'
+      else 'This account is banned from Mai Live Wars after three confirmed safety violations.'
     end,
     jsonb_build_object('strike', v_state.strike_count, 'action', v_action, 'restrictedUntil', v_restricted_until)
   );

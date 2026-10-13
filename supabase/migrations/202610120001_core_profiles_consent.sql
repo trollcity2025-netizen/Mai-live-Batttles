@@ -1,4 +1,4 @@
--- 001: MAI Life Wars identity, profile, consent, and account foundations.
+-- 001: Mai Live Wars identity, profile, consent, and account foundations.
 create extension if not exists pgcrypto;
 
 create table if not exists public.user_profiles (

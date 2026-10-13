@@ -1834,9 +1834,14 @@ export type Database = {
         Returns: Json
       }
       is_lw_admin: { Args: never; Returns: boolean }
+      enforce_battle_no_gift_cooldown: {
+        Args: { p_cooldown_exempt?: boolean; p_profile_id: string }
+        Returns: undefined
+      }
       join_existing_battle: {
         Args: {
           p_battle_id: string
+          p_cooldown_exempt?: boolean
           p_profile_id: string
           p_state_code?: string
         }
@@ -1844,6 +1849,7 @@ export type Database = {
       }
       join_or_create_battle: {
         Args: {
+          p_cooldown_exempt?: boolean
           p_format: string
           p_mode: string
           p_profile_id: string
