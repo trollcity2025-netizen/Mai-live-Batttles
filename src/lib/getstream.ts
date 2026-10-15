@@ -140,7 +140,11 @@ function createManagedCall(key: string, clientKey: string, clientEntry: ManagedC
       }
     }
   })
-  void session.ready.catch(() => undefined)
+  void session.joined.catch(() => undefined)
+  void session.mediaReady.catch(() => undefined)
+  void session.ready.catch((error) => {
+    console.error('[GetStream] Session ready failed', { callId, roomId, profileId, error: String(error) })
+  })
   return session
 }
 

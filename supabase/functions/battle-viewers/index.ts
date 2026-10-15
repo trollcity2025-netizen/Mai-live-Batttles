@@ -1,6 +1,10 @@
 import { corsHeaders, errorMessage, json } from '../_shared/cors.ts'
 import { requireProfile } from '../_shared/supabase.ts'
 
+function log(context: Record<string, unknown>) {
+  try { console.error('[battle-viewers]', JSON.stringify(context)) } catch { /* best-effort logging */ }
+}
+
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   try {
@@ -10,19 +14,26 @@ Deno.serve(async (request) => {
     const { db, profile } = await requireProfile(authorization)
     const { battleId } = await request.json()
     if (typeof battleId !== 'string') return json({ error: 'Battle ID is required' }, 400)
+    log({ event: 'request', battleId, profileId: profile.id })
 
     const { data: battle, error: battleError } = await db.from('battles')
       .select('id,status').eq('id', battleId).maybeSingle()
-    if (battleError) throw battleError
-    if (!battle || !['waiting', 'ready', 'live'].includes(battle.status)) return json({ error: 'Battle is not active' }, 404)
+    if (battleError) { log({ event: 'battle_query_error', battleId, error: battleError.message }); throw battleError }
+    if (!battle || !['waiting', 'ready', 'live'].includes(battle.status)) {
+      log({ event: 'battle_not_active', battleId, status: battle?.status })
+      return json({ error: 'Battle is not active' }, 404)
+    }
 
     const [{ data: participant, error: participantError }, { data: viewerSession, error: viewerError }] = await Promise.all([
       db.from('battle_participants').select('id').eq('battle_id', battleId).eq('user_profile_id', profile.id).in('status', ['ready', 'active']).maybeSingle(),
       db.from('stream_sessions').select('id').eq('battle_id', battleId).eq('user_profile_id', profile.id).eq('session_role', 'viewer').eq('session_status', 'joined').maybeSingle(),
     ])
-    if (participantError) throw participantError
-    if (viewerError) throw viewerError
-    if (!participant && !viewerSession) return json({ error: 'Join this battle to view its audience' }, 403)
+    if (participantError) { log({ event: 'participant_query_error', battleId, profileId: profile.id, error: participantError.message }); throw participantError }
+    if (viewerError) { log({ event: 'viewer_session_query_error', battleId, profileId: profile.id, error: viewerError.message }); throw viewerError }
+    if (!participant && !viewerSession) {
+      log({ event: 'not_participant_or_viewer', battleId, profileId: profile.id })
+      return json({ error: 'Join this battle to view its audience' }, 403)
+    }
 
     const [{ data: sessions, error: sessionsError }, { count: viewerCount, error: countError }, { data: blocks, error: blocksError }] = await Promise.all([
       db.from('stream_sessions')
@@ -36,9 +47,9 @@ Deno.serve(async (request) => {
       db.from('user_blocks').select('blocker_profile_id,blocked_profile_id')
         .or(`blocker_profile_id.eq.${profile.id},blocked_profile_id.eq.${profile.id}`),
     ])
-    if (sessionsError) throw sessionsError
-    if (countError) throw countError
-    if (blocksError) throw blocksError
+    if (sessionsError) { log({ event: 'sessions_query_error', battleId, error: sessionsError.message }); throw sessionsError }
+    if (countError) { log({ event: 'count_query_error', battleId, error: countError.message }); throw countError }
+    if (blocksError) { log({ event: 'blocks_query_error', battleId, error: blocksError.message }); throw blocksError }
 
     const blockedIds = new Set((blocks || []).flatMap((block) => [block.blocker_profile_id, block.blocked_profile_id]))
     const viewers = (sessions || []).flatMap((session) => {
@@ -75,6 +86,7 @@ Deno.serve(async (request) => {
     })
   } catch (error) {
     const message = errorMessage(error)
+    log({ event: 'error', error: message })
     return json({ error: message }, message === 'Unauthorized' ? 401 : 400)
   }
 })
