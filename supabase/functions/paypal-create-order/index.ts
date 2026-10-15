@@ -29,5 +29,12 @@ Deno.serve(async (request) => {
     const { data: purchase, error: insertError } = await db.from('purchase_orders').insert({ user_profile_id: profile.id, package_id: pkg.id, provider: 'paypal', provider_order_id: order.id, amount_usd: pkg.price_usd, bullets: pkg.bullets, status: 'created', idempotency_key: `paypal-order:${order.id}` }).select('id').single()
     if (insertError) throw insertError
     return json({ orderId: order.id, purchaseId: purchase.id, links: order.links?.filter((link: any) => ['approve','payer-action'].includes(link.rel)).map((link: any) => ({ rel: link.rel, href: link.href })) || [] })
-  } catch (error) { return json({ error: errorMessage(error) }, 400) }
+  } catch (error) {
+    const message = errorMessage(error)
+    if (message.toLowerCase().includes('client authentication failed')) {
+      return json({ error: 'PayPal rejected the configured credentials. Verify PAYPAL_ENV matches the PayPal app, then update PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in Supabase secrets.' }, 502)
+    }
+    const status = message === 'PayPal server credentials are not configured' ? 503 : 400
+    return json({ error: message }, status)
+  }
 })

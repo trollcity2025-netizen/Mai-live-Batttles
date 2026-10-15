@@ -798,7 +798,7 @@ function BulletStore({ play }: { play: (kind?: 'tap' | 'success' | 'battle' | 'w
     setBusyKey(packageKey)
     const { data, error } = await supabase.functions.invoke('paypal-create-order', { body: { packageKey } })
     setBusyKey('')
-    if (error || data?.error) { setMessage(error?.message || data.error); return }
+    if (error || data?.error) { setMessage(data?.error || error?.message || 'Unable to open PayPal checkout.'); return }
     const approval = data?.links?.find((link: any) => link.rel === 'approve' || link.rel === 'payer-action')
     if (!approval?.href) { setMessage('PayPal did not return an approval URL.'); return }
     sessionStorage.setItem('mai_life_wars_pending_paypal_order', data.orderId)
