@@ -20,8 +20,6 @@ export function setPageMeta(title: string, description: string, path = '/') {
     canonical.rel = 'canonical'
     document.head.appendChild(canonical)
   }
-  // No custom domain is assumed. Set VITE_PUBLIC_APP_URL to the approved hosted URL when available.
-  const baseUrl = import.meta.env.VITE_PUBLIC_APP_URL?.replace(/\/$/, '')
-  if (baseUrl) canonical.href = `${baseUrl}${path}`
-  else canonical.removeAttribute('href')
+  const baseUrl = (import.meta.env.VITE_PUBLIC_APP_URL?.trim() || 'https://mai-live-batttles.onrender.com').replace(/\/+$/, '')
+  canonical.href = `${baseUrl}${path}`
 }

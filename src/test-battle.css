@@ -1,0 +1,16 @@
+.test-battle-launcher{width:min(100% - 32px,720px);min-height:70vh;margin:0 auto;padding:clamp(32px,8vw,88px) 0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:18px}
+.test-battle-launcher h1{margin:4px 0;font-size:clamp(2.8rem,8vw,5.8rem);line-height:.95;letter-spacing:-.065em}
+.test-battle-launcher h1 span{color:var(--blue)}
+.test-battle-launcher p{max-width:620px;color:#a5b1c9;font-size:.9rem;line-height:1.8}
+.test-battle-setup-error{color:#ff9eae;font-size:.7rem}
+.test-battle-notice{display:flex;align-items:center;gap:12px;margin:0 0 18px;padding:12px 15px;border:1px solid rgba(255,193,102,.2);border-radius:10px;background:rgba(255,193,102,.055);color:#d5dfef;font-size:.68rem;line-height:1.5}
+.test-battle-notice strong{flex-shrink:0;color:#ffd08b;font:600 .62rem var(--mono);letter-spacing:.09em}
+.test-bot-gift-toast{margin:8px 0;padding:11px 14px;border:1px solid rgba(69,240,160,.22);border-radius:10px;background:rgba(69,240,160,.07);color:#a8f2cf;font-size:.72rem}
+.test-profile-card{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:9px;background:radial-gradient(ellipse at 50% 40%,rgba(40,185,255,.14),rgba(7,11,22,.96) 72%)}
+.sdk-team-b .test-profile-card{background:radial-gradient(ellipse at 50% 40%,rgba(184,124,255,.17),rgba(7,11,22,.96) 72%)}
+.test-profile-avatar{width:64px;height:64px;object-fit:cover;border:1px solid rgba(210,173,255,.38);border-radius:50%;background:#171428}
+.test-profile-avatar-fallback{display:grid;place-items:center;color:#dfc7ff;font-size:1.3rem;font-weight:800}
+.test-profile-status{padding:4px 7px;border:1px solid rgba(210,173,255,.24);border-radius:999px;color:#d2adff;font:500 .5rem var(--mono);letter-spacing:.08em}
+.test-profile-card .sdk-participant-label{position:static;padding:0;background:none;color:#aebbd1;text-align:center;white-space:normal}
+.test-battle-page .connection-indicator{color:#ffd08b}
+@media(max-width:520px){.test-battle-notice{align-items:flex-start;flex-direction:column;gap:5px}.test-profile-avatar{width:48px;height:48px}}

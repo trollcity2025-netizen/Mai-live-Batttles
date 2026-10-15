@@ -6,10 +6,8 @@ dist-ssr/
 # Secrets and local configuration
 .env
 .env.*
-!.env.example
 supabase/functions/.env
 supabase/functions/.env.*
-!supabase/functions/.env.example
 *.local
 
 # Local Supabase development state

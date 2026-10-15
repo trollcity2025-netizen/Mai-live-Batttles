@@ -1,4 +1,5 @@
 import { corsHeaders, errorMessage, json } from '../_shared/cors.ts'
+import { isBrowserRequest } from '../_shared/platform.ts'
 import { requireProfile } from '../_shared/supabase.ts'
 const paypalBase = () => Deno.env.get('PAYPAL_ENV') === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com'
 async function paypalAccessToken() {
@@ -11,6 +12,7 @@ async function paypalAccessToken() {
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   try {
+    if (!isBrowserRequest(request)) return json({ error: 'Bullet purchases are only available on the PC web version.' }, 403)
     const auth = request.headers.get('Authorization'); if (!auth) return json({ error: 'Authorization required' }, 401)
     const { db, profile } = await requireProfile(auth)
     const { packageKey } = await request.json()

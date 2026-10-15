@@ -1,7 +1,7 @@
 import { corsHeaders, errorMessage, json } from '../_shared/cors.ts'
 import { requireProfile } from '../_shared/supabase.ts'
 
-const allowedFormats = ['1v1','6v6']
+const allowedFormats = ['1v1','2v2','3v3','4v4','5v5','6v6']
 const allowedModes = ['standard','fast','slow','state']
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })

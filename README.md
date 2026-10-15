@@ -7,7 +7,7 @@ Mai Live Wars is a standalone MAI Corp mobile-first live creator battle app. The
 ## Product decisions
 
 - **Brand:** Mai Live Wars — an MAI Corp product.
-- **Platforms:** Android and iOS via Capacitor. No custom domain is required for the native app.
+- **Platforms:** Android and iOS via Capacitor, plus a PC web version for account access, Bullet purchases, battle browsing, live viewing, and joining waiting rooms. Battle creation is mobile-only; Bullet purchases are web-only.
 - **Backend:** Supabase Auth, PostgreSQL, Storage, Realtime, and Edge Functions.
 - **RTC:** GetStream Video SDK. Participant tokens are issued server-side; the API secret is never bundled in the app.
 - **Payments:** PayPal Orders/Capture for supported purchase flows and PayPal Payouts for eligible creator cashouts. App-store rules for digital currency must be followed.
@@ -15,7 +15,7 @@ Mai Live Wars is a standalone MAI Corp mobile-first live creator battle app. The
 - **Application identity:** all business tables reference `public.user_profiles(id)` rather than relying only on `auth.uid()`. `user_profiles.user_id` maps a profile to Supabase Auth.
 - **Currency:** Bullets. Purchased Bullets and creator earnings are separate balances. Purchase conversion is 125 purchased Bullets per $1; cashout conversion is 375 eligible earnings Bullets per $1. Initial minimum: 3,750 eligible earnings Bullets for $10.
 - **Cashouts:** requests are scheduled for Monday/Friday in America/Chicago time, subject to verification and payment processing.
-- **Battle formats:** 1v1 and 6v6.
+- **Battle formats:** 1v1 through 6v6. The universal arena renders a format-sized team grid for RTC feeds and waiting placeholders.
 - **Battle modes:** Standard and Fast = 180 real seconds; Slow = 180 displayed seconds at 0.5x countdown (360 real seconds); State Battle displays the user's selected state.
 - **No rematches and no sudden death.** A server-authoritative timer starts only when the required battle participants are connected.
 - **Marketing recording:** off by default. Explicit opt-in is recorded separately. Do not activate promotional recording unless every participant in that specific battle has consented and the recording notice is displayed.
@@ -26,7 +26,7 @@ Mai Live Wars is a standalone MAI Corp mobile-first live creator battle app. The
 
 The app uses the MAI Corp neon blue, green, and purple visual system; animated ambient backgrounds; responsive battle-format cards; synthetic UI sound cues that do not require audio files; sound toggle; state-battle selection; route-gated admin navigation; a secure account/profile flow; and footer legal links with “All rights reserved.”
 
-The battle room uses the official GetStream Video SDK participant views. On 6v6, each team has a three-column grid with two rows. When fewer participants have joined, the remaining slots are shown as waiting placeholders. A room remains in the waiting state until all required participants connect.
+The battle room uses the official GetStream Video SDK participant views inside one format-driven universal arena. Each team displays one through six slots according to the selected format; larger formats use additional grid columns and rows. When fewer participants have joined, the remaining slots are shown as waiting placeholders. A room remains in the waiting state until all required participants connect.
 
 ## Setup
 

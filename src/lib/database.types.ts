@@ -547,6 +547,7 @@ export type Database = {
           ended_at: string | null
           format: string
           id: string
+          is_test: boolean
           mode: string
           promotional_recording_asset_path: string | null
           promotional_recording_status: string
@@ -572,6 +573,7 @@ export type Database = {
           ended_at?: string | null
           format: string
           id?: string
+          is_test?: boolean
           mode?: string
           promotional_recording_asset_path?: string | null
           promotional_recording_status?: string
@@ -597,6 +599,7 @@ export type Database = {
           ended_at?: string | null
           format?: string
           id?: string
+          is_test?: boolean
           mode?: string
           promotional_recording_asset_path?: string | null
           promotional_recording_status?: string
@@ -883,6 +886,114 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      direct_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          user_a_profile_id: string
+          user_b_profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_a_profile_id: string
+          user_b_profile_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_a_profile_id?: string
+          user_b_profile_id?: string
+        }
+        Relationships: []
+      }
+      direct_messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_profile_id: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_profile_id: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_profile_id?: string
+        }
+        Relationships: []
+      }
+      user_blocks: {
+        Row: {
+          blocked_profile_id: string
+          blocker_profile_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_profile_id: string
+          blocker_profile_id: string
+          created_at?: string
+        }
+        Update: {
+          blocked_profile_id?: string
+          blocker_profile_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      user_notifications: {
+        Row: {
+          actor_profile_id: string | null
+          body: string
+          created_at: string
+          data: Json
+          event_key: string
+          href: string
+          id: string
+          kind: string
+          read_at: string | null
+          title: string
+          user_profile_id: string
+        }
+        Insert: {
+          actor_profile_id?: string | null
+          body: string
+          created_at?: string
+          data?: Json
+          event_key: string
+          href?: string
+          id?: string
+          kind: string
+          read_at?: string | null
+          title: string
+          user_profile_id: string
+        }
+        Update: {
+          actor_profile_id?: string | null
+          body?: string
+          created_at?: string
+          data?: Json
+          event_key?: string
+          href?: string
+          id?: string
+          kind?: string
+          read_at?: string | null
+          title?: string
+          user_profile_id?: string
+        }
+        Relationships: []
       }
       follows: {
         Row: {
@@ -1496,6 +1607,7 @@ export type Database = {
           avatar_path: string | null
           avatar_url: string | null
           bio: string | null
+          cashable_bullets: number
           city: string | null
           created_at: string
           display_name: string
@@ -1505,6 +1617,7 @@ export type Database = {
           marketing_recording_consent_at: string | null
           profile_complete: boolean
           role: string
+          spendable_bullets: number
           state_code: string | null
           updated_at: string
           user_id: string | null
@@ -1552,6 +1665,10 @@ export type Database = {
       }
       user_reports: {
         Row: {
+          ai_triage_category: string | null
+          ai_triage_confidence: number | null
+          ai_triage_status: string
+          ai_triage_summary: string | null
           battle_id: string | null
           category: string
           created_at: string
@@ -1564,6 +1681,10 @@ export type Database = {
           status: string
         }
         Insert: {
+          ai_triage_category?: string | null
+          ai_triage_confidence?: number | null
+          ai_triage_status?: string
+          ai_triage_summary?: string | null
           battle_id?: string | null
           category: string
           created_at?: string
@@ -1576,6 +1697,10 @@ export type Database = {
           status?: string
         }
         Update: {
+          ai_triage_category?: string | null
+          ai_triage_confidence?: number | null
+          ai_triage_status?: string
+          ai_triage_summary?: string | null
           battle_id?: string | null
           category?: string
           created_at?: string
@@ -1802,6 +1927,13 @@ export type Database = {
       }
     }
     Functions: {
+      get_my_profile_bullet_balances: {
+        Args: never
+        Returns: {
+          cashable_bullets: number
+          spendable_bullets: number
+        }[]
+      }
       account_safety_blocks_chat: {
         Args: { p_profile_id: string }
         Returns: boolean
@@ -1829,6 +1961,10 @@ export type Database = {
         Returns: boolean
       }
       current_user_profile_id: { Args: never; Returns: string }
+      confirm_test_bot_connection: {
+        Args: { p_battle_id: string; p_bot_profile_id: string; p_requester_profile_id: string }
+        Returns: Json
+      }
       finalize_battle: {
         Args: { p_battle_id: string; p_reason: string; p_winner_team: string }
         Returns: Json
@@ -1892,6 +2028,14 @@ export type Database = {
           p_sender_profile_id: string
         }
         Returns: Json
+      }
+      send_test_bot_gift: {
+        Args: { p_battle_id: string; p_bot_profile_id: string; p_gift_key: string; p_requester_profile_id: string }
+        Returns: Json
+      }
+      write_test_bot_chat: {
+        Args: { p_battle_id: string; p_bot_profile_id: string; p_message: string; p_requester_profile_id: string }
+        Returns: undefined
       }
       settle_cashout_payout: {
         Args: {

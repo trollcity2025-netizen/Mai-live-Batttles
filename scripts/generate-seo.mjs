@@ -2,8 +2,8 @@ import { mkdir, writeFile, rm, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
 let localBaseUrl = ''
-try { const localEnv = await readFile(resolve('.env.local'), 'utf8'); localBaseUrl = localEnv.match(/^\s*VITE_PUBLIC_APP_URL\s*=\s*['\"]?([^'\"\n#]+)['\"]?\s*$/m)?.[1]?.trim() || '' } catch { /* .env.local is optional */ }
-const baseUrl = (process.env.VITE_PUBLIC_APP_URL || process.env.PUBLIC_APP_URL || localBaseUrl || '').replace(/\/$/, '')
+try { const localEnv = await readFile(resolve('.env.local'), 'utf8'); localBaseUrl = localEnv.match(/^\s*VITE_PUBLIC_APP_URL\s*=\s*['"]?([^'"\n#]+)['"]?\s*$/m)?.[1]?.trim() || '' } catch { /* .env.local is optional */ }
+const baseUrl = (process.env.VITE_PUBLIC_APP_URL || process.env.PUBLIC_APP_URL || localBaseUrl || 'https://mai-live-batttles.onrender.com').replace(/\/+$/, '')
 const output = resolve('public/seo')
 await mkdir(output, { recursive: true })
 const pages = [

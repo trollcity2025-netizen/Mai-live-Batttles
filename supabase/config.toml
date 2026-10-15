@@ -60,6 +60,9 @@ verify_jwt = true
 [functions.admin-system-health]
 verify_jwt = true
 
+[functions.admin-list-users]
+verify_jwt = true
+
 [functions.confirm-battle-connection]
 verify_jwt = true
 
@@ -67,4 +70,34 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.admin-process-account-deletion]
+verify_jwt = true
+
+[functions.create-test-battle]
+verify_jwt = true
+
+[functions.test-bot-token]
+verify_jwt = true
+
+[functions.confirm-test-bot-connection]
+verify_jwt = true
+
+[functions.test-bot-gift]
+verify_jwt = true
+
+[functions.test-bot-chat]
+verify_jwt = true
+
+[functions.battle-viewers]
+verify_jwt = true
+
+[functions.open-direct-conversation]
+verify_jwt = true
+
+[functions.send-direct-message]
+verify_jwt = true
+
+[functions.report-battle-user]
+verify_jwt = true
+
+[functions.list-direct-conversations]
 verify_jwt = true

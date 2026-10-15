@@ -1,0 +1,24 @@
+.notification-center{position:relative;display:grid;place-items:center}
+.notification-bell{position:relative;display:grid;width:38px;height:38px;place-items:center;border:1px solid rgba(142,166,208,.19);border-radius:11px;background:rgba(255,255,255,.025);color:#c7d5ee;font-size:1.1rem;cursor:pointer}
+.notification-bell:hover,.notification-bell[aria-expanded=true]{border-color:rgba(40,185,255,.46);color:#7bd7ff;background:rgba(40,185,255,.08)}
+.notification-bell i{position:absolute;top:-6px;right:-7px;display:grid;min-width:17px;height:17px;place-items:center;padding:0 4px;border:2px solid #080b17;border-radius:99px;background:#ed5a79;color:white;font:700 .5rem var(--mono);font-style:normal}
+.notification-popover{position:absolute;z-index:80;top:calc(100% + 12px);right:0;width:min(370px,calc(100vw - 28px));overflow:hidden;border:1px solid rgba(128,162,212,.22);border-radius:14px;background:#0c1323;box-shadow:0 22px 70px rgba(0,0,0,.52);color:#edf3ff}
+.notification-popover>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-bottom:1px solid rgba(130,160,205,.13)}
+.notification-popover>header>div{display:grid;gap:4px}
+.notification-popover>header strong{font-size:.77rem}
+.notification-popover>header small{color:#8595b1;font-size:.58rem}
+.notification-popover>header button{padding:5px 0;border:0;background:none;color:#70d0ff;font-size:.59rem;cursor:pointer}
+.notification-popover>header button:disabled{opacity:.4;cursor:default}
+.notification-list{max-height:min(430px,65vh);overflow:auto}
+.notification-item{display:flex;width:100%;gap:10px;padding:12px 14px;border:0;border-bottom:1px solid rgba(130,160,205,.08);background:transparent;color:inherit;text-align:left;cursor:pointer}
+.notification-item:hover{background:rgba(40,185,255,.07)}
+.notification-item.unread{background:rgba(40,185,255,.045)}
+.notification-unread-dot{width:7px;height:7px;flex:none;margin-top:5px;border-radius:50%;background:#49caff;opacity:0}
+.notification-item.unread .notification-unread-dot{opacity:1;box-shadow:0 0 9px rgba(73,202,255,.7)}
+.notification-copy{display:grid;min-width:0;gap:4px}
+.notification-copy strong{font-size:.66rem}
+.notification-copy>span{color:#a8b6cc;font-size:.62rem;line-height:1.45}
+.notification-copy time{color:#7787a2;font-size:.52rem}
+.notification-empty,.notification-error{margin:0;padding:21px 15px;color:#8999b4;font-size:.64rem;line-height:1.5;text-align:center}
+.notification-error{color:#ff9cac}
+.admin-topbar .notification-center{margin-left:auto}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mai Live Wars</string>
+    <string name="title_activity_main">Mai Live Wars</string>
+    <string name="package_name">com.mailivewars.app</string>
+    <string name="custom_url_scheme">com.mailivewars.app</string>
+</resources>

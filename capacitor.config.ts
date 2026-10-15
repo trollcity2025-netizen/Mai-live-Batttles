@@ -1,6 +1,6 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 const config: CapacitorConfig = {
-  appId: 'com.maicorp.lifewars',
+  appId: 'com.mailivewars.app',
   appName: 'Mai Live Wars',
   webDir: 'dist',
   bundledWebRuntime: false,
