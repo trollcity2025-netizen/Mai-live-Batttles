@@ -19,7 +19,7 @@ Deno.serve(async (request) => {
     const { data: battle, error: battleError } = await db.from('battles')
       .select('id,status').eq('id', battleId).maybeSingle()
     if (battleError) { log({ event: 'battle_query_error', battleId, error: battleError.message }); throw battleError }
-    if (!battle || !['waiting', 'ready', 'live'].includes(battle.status)) {
+    if (!battle || !['waiting', 'ready', 'live', 'pending', 'active'].includes(battle.status)) {
       log({ event: 'battle_not_active', battleId, status: battle?.status })
       return json({ error: 'Battle is not active' }, 404)
     }

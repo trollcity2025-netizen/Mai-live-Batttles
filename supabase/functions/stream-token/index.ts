@@ -25,7 +25,7 @@ Deno.serve(async (request) => {
     const { roomId, profileId } = await request.json()
     if (profileId !== profile.id || typeof roomId !== 'string') return json({ error: 'Profile mismatch' }, 403)
     const { data: battle, error: battleError } = await db.from('battles').select('id,status,stream_call_id,format,real_duration_seconds,created_by_profile_id').eq('id', roomId).maybeSingle()
-    if (battleError || !battle || !['waiting','ready','live'].includes(battle.status)) return json({ error: 'Battle is not available' }, 404)
+    if (battleError || !battle || !['waiting','ready','live','pending','active'].includes(battle.status)) return json({ error: 'Battle is not available' }, 404)
     const { data: participant, error: participantError } = await db.from('battle_participants').select('id,status').eq('battle_id', battle.id).eq('user_profile_id', profile.id).maybeSingle()
     if (participantError) throw participantError
     const viewer = !participant

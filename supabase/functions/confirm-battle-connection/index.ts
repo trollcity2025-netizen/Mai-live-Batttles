@@ -17,7 +17,7 @@ Deno.serve(async (request) => {
 
     const {data:battle,error:battleError}=await db.from('battles').select('id,status,format,real_duration_seconds,stream_call_id').eq('id',roomId).single()
     if(battleError||!battle) { log({event:'battle_not_found',battleId:roomId,error:battleError?.message}); return json({error:'Battle not found'},404) }
-    if(!['waiting','ready','live'].includes(battle.status)) { log({event:'battle_ineligible_status',battleId:roomId,status:battle.status}); return json({error:'Battle is not accepting a connection confirmation'},404) }
+    if(!['waiting','ready','live','pending','active'].includes(battle.status)) { log({event:'battle_ineligible_status',battleId:roomId,status:battle.status}); return json({error:'Battle is not accepting a connection confirmation'},404) }
 
     const {data:participant,error:participantError}=await db.from('battle_participants').select('id,status,stream_user_id').eq('battle_id',battle.id).eq('user_profile_id',profile.id).maybeSingle()
     if(participantError||!participant||!['ready','active'].includes(participant.status)) { log({event:'participant_not_ready',battleId:roomId,profileId,status:participant?.status}); return json({error:'Only a queued participant can confirm a broadcast connection'},403) }
@@ -40,7 +40,7 @@ Deno.serve(async (request) => {
 
     if((connectedCount||0)>=expectedCount&&battle.status!=='live') {
       const endAt=new Date(now.getTime()+Number(battle.real_duration_seconds)*1000)
-      const {data:started,error:startError}=await db.from('battles').update({status:'live',started_at:now.toISOString(),scheduled_end_at:endAt.toISOString()}).eq('id',battle.id).in('status',['waiting','ready']).select('id').maybeSingle()
+      const {data:started,error:startError}=await db.from('battles').update({status:'live',started_at:now.toISOString(),scheduled_end_at:endAt.toISOString()}).eq('id',battle.id).in('status',['waiting','ready','active']).select('id').maybeSingle()
       if(startError) { log({event:'live_transition_failed',battleId:roomId,error:startError.message}); throw startError }
       if(started) {
         await db.from('battle_events').insert({battle_id:battle.id,event_type:'timer_started',payload:{started_at:now.toISOString(),scheduled_end_at:endAt.toISOString(),connectedCount,expectedCount},idempotency_key:`timer-start:${battle.id}`})

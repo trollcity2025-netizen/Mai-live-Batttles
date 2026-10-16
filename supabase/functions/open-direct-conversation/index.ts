@@ -22,7 +22,7 @@ Deno.serve(async (request) => {
     if (targetError) throw targetError
     if (participantError) throw participantError
     if (viewerError) throw viewerError
-    if (!battle || !['waiting', 'ready', 'live'].includes(battle.status) || (!participant && !viewer)) {
+    if (!battle || !['waiting', 'ready', 'live', 'pending', 'active'].includes(battle.status) || (!participant && !viewer)) {
       return json({ error: 'You must be in this active battle to message its audience' }, 403)
     }
     if (!target?.profile_complete || target.account_status !== 'active') return json({ error: 'This profile is unavailable' }, 404)

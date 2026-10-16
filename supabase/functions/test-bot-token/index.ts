@@ -27,7 +27,7 @@ Deno.serve(async (request) => {
     if (typeof battleId !== 'string') return json({ error: 'Battle ID is required' }, 400)
     const { data: battle, error: battleError } = await db.from('battles').select('id,status,is_test,stream_call_id,created_by_profile_id').eq('id', battleId).maybeSingle()
     if (battleError) throw battleError
-    if (!battle || !battle.is_test || battle.created_by_profile_id !== profile.id || !['waiting', 'ready', 'live'].includes(battle.status)) {
+    if (!battle || !battle.is_test || battle.created_by_profile_id !== profile.id || !['waiting', 'ready', 'live', 'pending', 'active'].includes(battle.status)) {
       return json({ error: 'You cannot start an Admin Tester session for this battle' }, 403)
     }
     const { data: botParticipant, error: participantError } = await db.from('battle_participants')

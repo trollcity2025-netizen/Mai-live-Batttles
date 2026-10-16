@@ -29,7 +29,7 @@ Deno.serve(async (request) => {
     if (reporterViewerError) throw reporterViewerError
     if (targetParticipantError) throw targetParticipantError
     if (targetViewerError) throw targetViewerError
-    if (!battle || !['waiting', 'ready', 'live'].includes(battle.status) || (!reporterParticipant && !reporterViewer)) {
+    if (!battle || !['waiting', 'ready', 'live', 'pending', 'active'].includes(battle.status) || (!reporterParticipant && !reporterViewer)) {
       return json({ error: 'You must be in this active battle to report someone' }, 403)
     }
     if (!targetParticipant && !targetViewer) return json({ error: 'That user is no longer in this battle' }, 404)

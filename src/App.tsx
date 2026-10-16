@@ -285,7 +285,7 @@ function HomePage({ profile, activeFormat, setActiveFormat, activeMode, setActiv
     if (!db) return
     const loadRooms = async () => {
       setLoadingRooms(true)
-      const { data, error } = await db.from('battles').select('id,format,mode,status,team_a_score,team_b_score,viewer_count,state_code,started_at').eq('is_test', false).in('status', ['waiting', 'live']).order('created_at', { ascending: false }).limit(12)
+      const { data, error } = await db.from('battles').select('id,format,mode,status,team_a_score,team_b_score,viewer_count,state_code,started_at').eq('is_test', false).in('status', ['pending', 'active', 'live', 'ready']).order('created_at', { ascending: false }).limit(12)
       if (!alive) return
       if (!error && data) {
         const ids = data.map((room: any) => room.id)
@@ -315,7 +315,7 @@ function HomePage({ profile, activeFormat, setActiveFormat, activeMode, setActiv
     const loadWaitingBattle = async () => {
       setLoadingWaitingBattle(true)
       try {
-        let query = db.from('battles').select('id,format,mode,state_code,status,created_by_profile_id').eq('status', 'waiting').eq('format', activeFormat).eq('mode', activeMode)
+        let query = db.from('battles').select('id,format,mode,state_code,status,created_by_profile_id').eq('status', 'pending').eq('format', activeFormat).eq('mode', activeMode)
         if (activeMode === 'state') query = query.eq('state_code', stateChoice)
         const { data, error } = await query.order('created_at', { ascending: true }).limit(1).maybeSingle()
         if (!alive || cancelled) return
@@ -330,7 +330,10 @@ function HomePage({ profile, activeFormat, setActiveFormat, activeMode, setActiv
       }
     }
     void loadWaitingBattle()
-    return () => { cancelled = true; alive = false }
+    const waitChannel = db.channel('home-waiting-battle-feed')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'battles' }, () => { if (alive && !cancelled) void loadWaitingBattle() })
+      .subscribe()
+    return () => { cancelled = true; alive = false; void db.removeChannel(waitChannel) }
   }, [activeFormat, activeMode, stateChoice, profile.id])
 
   const selectedStateName = states.find((name) => stateCodes[name] === stateChoice) || stateChoice
@@ -354,7 +357,7 @@ function BattleDirectory({ enterBattle, activeMode }: { enterBattle: (mode: Batt
     if (!supabase) return
     setMessage('')
     try {
-      const { data, count, error } = await supabase.from('battles').select('id,format,mode,status,team_a_score,team_b_score,viewer_count,state_code,created_at', { count: 'exact' }).eq('is_test', false).in('status', ['waiting', 'live']).order('created_at', { ascending: false }).range(offset, offset + 49)
+      const { data, count, error } = await supabase.from('battles').select('id,format,mode,status,team_a_score,team_b_score,viewer_count,state_code,created_at', { count: 'exact' }).eq('is_test', false).in('status', ['pending', 'active', 'live', 'ready']).order('created_at', { ascending: false }).range(offset, offset + 49)
       if (error) throw error
       const ids = (data || []).map((room: any) => room.id)
       const { data: participants, error: participantError } = ids.length
@@ -785,7 +788,7 @@ function StreamParticipantGrid({ teamAssignments, format, participantsPerTeam, m
   return <><ParticipantsAudio participants={remoteAudioParticipants} /><UniversalBattleArena teamAssignments={teamAssignments} format={format} participantsPerTeam={participantsPerTeam} mode={mode} ownProfileId={ownProfileId} ownStateCode={ownStateCode} participantsByUserId={byId} testMode={testMode} /></>
 }
 
-function UniversalBattleArena({ teamAssignments, format, participantsPerTeam, mode, ownProfileId, ownStateCode, participantsByUserId = new Map(), testMode = false }: {
+export function UniversalBattleArena({ teamAssignments, format, participantsPerTeam, mode, ownProfileId, ownStateCode, participantsByUserId = new Map(), testMode = false }: {
   teamAssignments: Record<string, { team: 'A' | 'B'; stateCode: string | null; name: string; status: string; avatarUrl?: string | null }>
   format: BattleFormat
   participantsPerTeam: number
@@ -795,18 +798,34 @@ function UniversalBattleArena({ teamAssignments, format, participantsPerTeam, mo
   participantsByUserId?: Map<string, any>
   testMode?: boolean
 }) {
+  const absentStatuses = ['removed', 'left', 'forfeit']
   const makeTeam = (team: 'A' | 'B') => Array.from({ length: participantsPerTeam }, (_, index) => {
-    const profileEntry = Object.entries(teamAssignments).filter(([, info]) => info.team === team && !['removed', 'left', 'forfeit'].includes(info.status))[index]
+    const profileEntry = Object.entries(teamAssignments).filter(([, info]) => info.team === team && !absentStatuses.includes(info.status))[index]
     const userId = profileEntry?.[0]
-    const participant = userId ? participantsByUserId.get(userId) : null
     const info = userId ? teamAssignments[userId] : null
+    const participant = userId ? participantsByUserId.get(userId) : null
     const stateCode = mode === 'state' ? (info?.stateCode || (userId === ownProfileId ? ownStateCode : null)) : null
     const stateName = stateCode ? states.find((name) => stateCodes[name] === stateCode) || stateCode : null
-    return testMode && info && userId !== ownProfileId
-      ? createElement('div', { className: `sdk-participant-card test-profile-card tile-team-${team.toLowerCase()}`, key: participant?.sessionId || userId }, info.avatarUrl ? createElement('img', { className: 'test-profile-avatar', src: info.avatarUrl, alt: `${info.name} avatar` }) : createElement('span', { className: 'test-profile-avatar test-profile-avatar-fallback' }, info.name.slice(0, 1).toUpperCase()), createElement('span', { className: 'test-profile-status' }, participant ? 'ADMIN TESTER · CONNECTED' : 'ADMIN TESTER'), createElement('span', { className: 'sdk-participant-label' }, info.name))
-      : participant
-      ? createElement('div', { className: `sdk-participant-card tile-team-${team.toLowerCase()}`, key: `participant-${userId}` }, createElement(ParticipantView as any, { participant, muteAudio: true, className: 'sdk-participant-video', playsInline: true }), stateName && createElement('span', { className: 'sdk-participant-state' }, `⌖ ${stateName}`), createElement('span', { className: 'sdk-participant-label' }, info?.name || participant.name || 'Fighter'))
-      : createElement('div', { className: `sdk-participant-card sdk-placeholder tile-team-${team.toLowerCase()}`, key: userId || `empty-${team}-${index}` }, stateName && createElement('span', { className: 'sdk-participant-state' }, `⌖ ${stateName}`), createElement('span', { className: 'sdk-placeholder-initial' }, info?.name?.slice(0, 1).toUpperCase() || '＋'), createElement('span', { className: 'sdk-participant-label' }, info?.name || `Fighter ${index + 1} · Waiting`))
+
+    if (testMode && info && userId !== ownProfileId) {
+      return createElement('div', { className: `sdk-participant-card test-profile-card tile-team-${team.toLowerCase()}`, key: `test-${userId}` }, info.avatarUrl ? createElement('img', { className: 'test-profile-avatar', src: info.avatarUrl, alt: `${info.name} avatar` }) : createElement('span', { className: 'test-profile-avatar test-profile-avatar-fallback' }, info.name.slice(0, 1).toUpperCase()), createElement('span', { className: 'test-profile-status' }, participant ? 'ADMIN TESTER · CONNECTED' : 'ADMIN TESTER'), createElement('span', { className: 'sdk-participant-label' }, info.name))
+    }
+
+    if (info) {
+      // A rostered fighter is never shown as absent. Their name is displayed immediately,
+      // and their video track is attached as soon as the Stream participant is known.
+      // The card remounts when the participant session changes (reconnect / track replacement)
+      // so the SDK re-subscribes to the new track.
+      return createElement('div', {
+        className: `sdk-participant-card tile-team-${team.toLowerCase()}${participant ? ' sdk-track-ready' : ' sdk-track-pending'}`,
+        key: participant ? `participant-${userId}-${String(participant.sessionId || '')}` : `roster-${userId}-${index}`,
+      }, createElement('div', { className: 'sdk-participant-video-wrap' }, participant
+        ? createElement(ParticipantView as any, { participant, muteAudio: true, className: 'sdk-participant-video', playsInline: true })
+        : createElement('div', { className: 'sdk-participant-video sdk-participant-video-pending', 'aria-hidden': 'true' }),
+      ), stateName && createElement('span', { className: 'sdk-participant-state' }, `⌖ ${stateName}`), createElement('span', { className: 'sdk-participant-label' }, info.name || `Fighter ${index + 1}`))
+    }
+
+    return createElement('div', { className: `sdk-participant-card sdk-placeholder tile-team-${team.toLowerCase()}`, key: `empty-${team}-${index}` }, stateName && createElement('span', { className: 'sdk-participant-state' }, `⌖ ${stateName}`), createElement('span', { className: 'sdk-placeholder-initial' }, '＋'), createElement('span', { className: 'sdk-participant-label' }, `Fighter ${index + 1} · Waiting`))
   })
   return <BattleArenaLayout participantsPerTeam={participantsPerTeam} format={format} makeTeam={makeTeam} />
 }
