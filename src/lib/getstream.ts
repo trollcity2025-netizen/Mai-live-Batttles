@@ -7,6 +7,7 @@ export type StreamConnection = {
   isViewer: boolean
   ready: Promise<void>
   dispose: () => Promise<void>
+  mediaError: string | null
 }
 
 export type TestBattleOpponentConnection = {
@@ -32,6 +33,7 @@ type ManagedCall = {
   joined: Promise<void>
   mediaReady: Promise<void>
   ready: Promise<void>
+  mediaError: string | null
   disposePromise: Promise<void> | null
 }
 
@@ -112,6 +114,7 @@ function createManagedCall(key: string, clientKey: string, clientEntry: ManagedC
     joined: Promise.resolve(),
     mediaReady: Promise.resolve(),
     ready: Promise.resolve(),
+    mediaError: null,
     disposePromise: null,
   }
   calls.set(key, session)
@@ -119,9 +122,21 @@ function createManagedCall(key: string, clientKey: string, clientEntry: ManagedC
   session.joined = call.join({ create: !isViewer })
   session.mediaReady = session.joined.then(async () => {
     if (isViewer || session.references === 0) return
-    await call.camera.enable()
+    try {
+      await call.camera.enable()
+    } catch (cameraError) {
+      session.mediaError = cameraError instanceof Error ? cameraError.message : 'Camera enable failed'
+      console.warn('[GetStream] Camera enable failed', { callId, roomId, profileId, error: session.mediaError })
+    }
     if (session.references === 0) return
-    await call.microphone.enable()
+    try {
+      await call.microphone.enable()
+    } catch (micError) {
+      if (!session.mediaError) {
+        session.mediaError = micError instanceof Error ? micError.message : 'Microphone enable failed'
+      }
+      console.warn('[GetStream] Microphone enable failed', { callId, roomId, profileId, error: session.mediaError })
+    }
   })
   session.ready = session.mediaReady.then(async () => {
     if (isViewer || session.references === 0) return
@@ -129,7 +144,7 @@ function createManagedCall(key: string, clientKey: string, clientEntry: ManagedC
     if (!db) throw new Error('Supabase is not configured. Add your public project URL and anon key.')
     const { data: confirmation, error: confirmationError } = await db.functions.invoke('confirm-battle-connection', { body: { roomId, profileId } })
     if (confirmationError || confirmation?.error) {
-      throw new Error(confirmationError?.message || confirmation?.error || 'Could not confirm the battle connection.')
+      console.warn('[GetStream] confirm-battle-connection returned error', { callId, roomId, profileId, error: confirmationError?.message || confirmation?.error })
     }
     if (session.references === 0) return
     if (confirmation?.shouldStartTranscription && typeof call.startTranscription === 'function') {
@@ -140,9 +155,13 @@ function createManagedCall(key: string, clientKey: string, clientEntry: ManagedC
       }
     }
   })
-  void session.joined.catch(() => undefined)
-  void session.mediaReady.catch(() => undefined)
-  void session.ready.catch((error) => {
+  void session.joined.catch((error) => {
+    console.error('[GetStream] Call join failed', { callId, roomId, profileId, error: String(error) })
+  })
+  void session.mediaReady.catch((error) => {
+    console.error('[GetStream] Media ready failed', { callId, roomId, profileId, error: String(error) })
+  })
+  session.ready.catch((error) => {
     console.error('[GetStream] Session ready failed', { callId, roomId, profileId, error: String(error) })
   })
   return session
@@ -181,10 +200,6 @@ async function acquireCallSession(sessionKey: string, clientKey: string, apiKey:
   }
 }
 
-/**
- * Connects the official GetStream Video SDK to an authenticated battle.
- * The API secret is never sent to the app; a Supabase Edge Function issues a short-lived user token.
- */
 export async function connectGetStreamBattle(roomId: string, profileId: string, displayName: string, signal?: AbortSignal): Promise<StreamConnection> {
   if (!supabase) throw new Error('Supabase is not configured. Add the public project URL and anon key.')
   if (signal?.aborted) throw abortError()
@@ -237,6 +252,7 @@ export async function connectGetStreamBattle(roomId: string, profileId: string, 
       call: session.call,
       isViewer: session.isViewer,
       ready: session.ready,
+      mediaError: session.mediaError,
       dispose: release,
     }
   } catch (error) {

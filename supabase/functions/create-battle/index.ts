@@ -18,7 +18,7 @@ Deno.serve(async (request) => {
     if (!allowedModes.includes(mode)) return json({ error: 'Invalid battle mode' }, 400)
     if (mode === 'state' && !/^[A-Z]{2}$/.test(stateCode || '')) return json({ error: 'Choose a valid state before starting a state battle' }, 400)
     const cooldownExempt = profile.role === 'admin' || user.email?.trim().toLowerCase() === 'trollcity2025@gmail.com'
-    const { data, error } = await db.rpc('join_or_create_battle', { p_profile_id: profile.id, p_format: format, p_mode: mode, p_state_code: stateCode, p_cooldown_exempt: cooldownExempt })
+    const { data, error } = await db.rpc('captain_click_battle', { p_stream_id: crypto.randomUUID(), p_captain_id: profile.id, p_format: format, p_mode: mode, p_state_code: stateCode, p_cooldown_exempt: cooldownExempt })
     if (error) throw error
     return json(data)
   } catch (error) {
